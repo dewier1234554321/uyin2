@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Roblox +1 Speed Escape 3D - Mobile & Desktop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Nunito', sans-serif;
+            background-color: #0b0f19;
+        }
+        .font-roblox {
+            font-family: 'Fredoka One', cursive;
+        }
+        .roblox-btn {
+            background: linear-gradient(180deg, #00E676 0%, #00A843 100%);
+            box-shadow: 0px 5px 0px #006629, 0px 8px 12px rgba(0,0,0,0.4);
+            transition: all 0.1s ease;
+        }
+        .roblox-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0px 2px 0px #006629;
+        }
+        .treadmill-btn {
+            background: linear-gradient(180deg, #FF9100 0%, #D50000 100%);
+            box-shadow: 0px 4px 0px #800000, 0px 6px 10px rgba(0,0,0,0.4);
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.18);
+        }
+        .joystick-zone {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 130px;
+            height: 130px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            touch-action: none;
+        }
+        .joystick-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 55px;
+            height: 55px;
+            margin-top: -27.5px;
+            margin-left: -27.5px;
+            background: radial-gradient(circle, #00E676 0%, #008f39 100%);
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            pointer-events: none;
+            transition: transform 0.05s ease-out;
+        }
+        .touch-jump-btn {
+            position: absolute;
+            bottom: 35px;
+            right: 35px;
+            width: 90px;
+            height: 90px;
+            background: radial-gradient(circle, #3B82F6 0%, #1D4ED8 100%);
+            border: 4px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            touch-action: none;
+        }
+        .touch-jump-btn:active {
+            transform: scale(0.92);
+            background: radial-gradient(circle, #2563EB 0%, #1E40AF 100%);
+        }
+        .crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 14px;
+            height: 14px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            display: none;
+        }
+        .crosshair::before, .crosshair::after {
+            content: '';
+            position: absolute;
+            background: white;
+            box-shadow: 0 0 3px black;
+        }
+        .crosshair::before { top: 6px; left: 0; width: 14px; height: 2px; }
+        .crosshair::after { top: 0; left: 6px; width: 2px; height: 14px; }
+    </style>
+</head>
+<body class="w-screen h-screen relative overflow-hidden select-none">
+
+    <div id="canvas-container" class="w-full h-full absolute inset-0 z-0"></div>
+    <div id="crosshair" class="crosshair z-20"></div>
+
+    <!-- Landscape Orientation Notice Overlay for Mobile -->
+    <div id="landscape-notice" class="hidden fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-white">
+        <div class="text-6xl mb-4 animate-bounce">📱🔄</div>
+        <h2 class="text-2xl font-roblox text-yellow-400 mb-2">TELEFONNI YONG'A BURING!</h2>
+        <p class="text-sm text-gray-300 max-w-xs">O'yin o'ynash uchun telefoningizni gorizontal (Landscape) rejimga buring.</p>
+    </div>
+
+    <!-- Start Game Modal Screen -->
+    <div id="start-screen" class="absolute inset-0 z-40 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
+        <div class="glass-panel max-w-md w-full rounded-3xl p-6 text-center text-white shadow-2xl relative border-4 border-yellow-400">
+            <h1 class="text-3xl sm:text-4xl font-roblox text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-yellow-300 to-pink-500 mb-2">
+                ROBLOX +1 TEZLIK ESCAPE 3D!
+            </h1>
+            <p class="text-xs text-gray-300 font-bold mb-4">Telefon Touch va Kompyuter Klaviaturasi uchun moslashtirilgan!</p>
+
+            <div class="bg-slate-900/90 rounded-2xl p-3 text-left mb-5 border border-slate-700 space-y-1.5 text-xs">
+                <div class="flex items-center space-x-2 text-yellow-300 font-bold">
+                    <span>🎮 CONTROLS / BOSHQARUV:</span>
+                </div>
+                <div class="text-gray-300">
+                    • <b>Telefon:</b> Chap Virtual Joystick - Yurish | O'ng Joystick / Barmog'ingiz - Kamerani Burish | Moviy Tugma - Sakrash.<br>
+                    • <b>Treadmill:</b> Chap tarafdagi Treadmill tugmasini bossangiz tezlik va tanga to'planadi!
+                </div>
+            </div>
+
+            <button id="start-btn" class="roblox-btn w-full py-3.5 rounded-2xl font-roblox text-xl text-white tracking-wider uppercase cursor-pointer">
+                O'YINNI BOSHLASH 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- In-Game Main HUD -->
+    <div id="game-hud" class="hidden absolute inset-0 z-10 pointer-events-none p-3 flex flex-col justify-between">
+        
+        <!-- Top Stats Bar -->
+        <div class="flex justify-between items-center w-full max-w-4xl mx-auto">
+            <!-- Speed Counter -->
+            <div class="glass-panel px-3 py-1.5 rounded-2xl flex items-center space-x-2 border-2 border-cyan-400 shadow-xl pointer-events-auto">
+                <span class="text-xl sm:text-2xl">⚡</span>
+                <div>
+                    <div class="text-[9px] uppercase tracking-wider text-cyan-300 font-extrabold">TEZLIK</div>
+                    <div id="hud-speed" class="text-lg sm:text-2xl font-roblox text-white">1</div>
+                </div>
+            </div>
+
+            <!-- Current World Banner -->
+            <div class="glass-panel px-4 py-1.5 rounded-2xl flex items-center space-x-2 border-2 border-yellow-400 shadow-xl pointer-events-auto bg-yellow-500/10">
+                <span class="text-xl sm:text-2xl">🌎</span>
+                <div class="text-center">
+                    <div class="text-[9px] uppercase tracking-wider text-yellow-300 font-extrabold">DUNYO</div>
+                    <div id="hud-world" class="text-lg sm:text-2xl font-roblox text-yellow-300">WORLD 1</div>
+                </div>
+            </div>
+
+            <!-- Coin Counter -->
+            <div class="glass-panel px-3 py-1.5 rounded-2xl flex items-center space-x-2 border-2 border-amber-400 shadow-xl pointer-events-auto">
+                <span class="text-xl sm:text-2xl">🪙</span>
+                <div>
+                    <div class="text-[9px] uppercase tracking-wider text-amber-300 font-extrabold">TANGA</div>
+                    <div id="hud-coins" class="text-lg sm:text-2xl font-roblox text-yellow-400">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Left Action Controls (Treadmill & Booster) -->
+        <div class="absolute left-3 top-20 flex flex-col space-y-2 pointer-events-auto">
+            <button id="treadmill-btn" class="treadmill-btn p-3 rounded-2xl text-white font-roblox flex flex-col items-center justify-center border-2 border-orange-300 shadow-2xl group cursor-pointer transition active:scale-95">
+                <span class="text-2xl sm:text-3xl">🏃‍♂️️</span>
+                <span class="text-[9px] uppercase mt-0.5">TREADMILL</span>
+                <span id="treadmill-status" class="text-[8px] bg-black/50 px-1.5 py-0.5 rounded-full text-green-300 mt-0.5">YUGURISH</span>
+            </button>
+
+            <button id="shift-lock-btn" class="glass-panel p-2.5 rounded-2xl text-white font-roblox flex flex-col items-center border-2 border-purple-400 cursor-pointer hover:bg-purple-500/20 active:scale-95 transition">
+                <span class="text-xl">🔒</span>
+                <span class="text-[8px] text-purple-300">SHIFT LOCK</span>
+                <span id="shift-status" class="text-[8px] text-red-400">OFF</span>
+            </button>
+        </div>
+
+        <!-- Mobile Touch Joystick & Jump Button -->
+        <div class="w-full h-full absolute inset-0 pointer-events-none">
+            <!-- Left Virtual Touch Joystick -->
+            <div id="joystick-zone" class="joystick-zone pointer-events-auto">
+                <div id="joystick-knob" class="joystick-knob"></div>
+            </div>
+
+            <!-- Right Large Touch Jump Button -->
+            <div id="touch-jump-btn" class="touch-jump-btn pointer-events-auto font-roblox">
+                🦘
+            </div>
+        </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div id="victory-modal" class="hidden absolute inset-0 z-40 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
+        <div class="glass-panel max-w-sm w-full rounded-3xl p-6 text-center text-white shadow-2xl relative border-4 border-green-400">
+            <h2 class="text-3xl font-roblox text-green-400 mb-2">DUNYO BOSILDI! 🎉</h2>
+            <p id="victory-desc" class="text-gray-300 mb-4 text-xs">Muvaffaqiyatli ravishda marraga yetib keldingiz!</p>
+
+            <div class="bg-slate-900/80 rounded-2xl p-3 mb-5 border border-slate-700 flex justify-around">
+                <div>
+                    <div class="text-[10px] text-gray-400">Mukofot Tanga</div>
+                    <div id="win-coins" class="text-xl font-roblox text-amber-400">+100 🪙</div>
+                </div>
+                <div class="border-r border-slate-700"></div>
+                <div>
+                    <div class="text-[10px] text-gray-400">Keyingi Dunyo</div>
+                    <div id="next-world-title" class="text-xl font-roblox text-cyan-400">WORLD 2</div>
+                </div>
+            </div>
+
+            <button id="next-world-btn" class="roblox-btn w-full py-3.5 rounded-2xl font-roblox text-xl text-white tracking-wider uppercase cursor-pointer">
+                KEYINGI DUNYO 🚀
+            </button>
+        </div>
+    </div>
+
+    <script>
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playFootstep() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(130, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.08);
+            }
+
+            playJump() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(450, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
+
+            playDeath() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.35);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.35);
+            }
+
+            playVictory() {
+                if (!this.ctx) return;
+                const notes = [261.63, 329.63, 392.00, 523.25, 659.25];
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.12, this.ctx.currentTime + idx * 0.09);
+                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.09 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + idx * 0.09);
+                    osc.stop(this.ctx.currentTime + idx * 0.09 + 0.25);
+                });
+            }
+        }
+
+        const audio = new SoundEngine();
+
+        let scene, camera, renderer;
+        let player, head, leftLeg, rightLeg;
+        let treadmillMesh, treadmillBelt;
+        let platforms = [];
+        let hazards = [];
+        let finishPortal;
+
+        // Player Game Stats
+        let speed = 1;
+        let coins = 0;
+        let currentWorld = 1;
+
+        // Movement Physics & Camera
+        let velocityY = 0;
+        let isGrounded = false;
+        let isOnTreadmill = false;
+        const gravity = -32;
+        const baseJumpForce = 12;
+
+        // Camera control angles
+        let cameraYaw = 0;
+        let cameraPitch = 0.2; // Mouse/Touch Pitch (Correct Y-axis direction)
+        let isShiftLocked = false;
+        let isMouseDown = false;
+        let prevTouchX = 0, prevTouchY = 0;
+        let cameraTouchId = null;
+
+        // Virtual Touch Joystick input values (-1 to 1)
+        let joystickVector = { x: 0, y: 0 };
+        const keys = { w: false, a: false, s: false, d: false };
+        let footstepTimer = 0;
+
+        function initScene() {
+            const container = document.getElementById('canvas-container');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0b0f19);
+            scene.fog = new THREE.FogExp2(0x0b0f19, 0.008);
+
+            camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            // Lighting setup
+            const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambient);
+
+            const sun = new THREE.DirectionalLight(0xffffff, 0.9);
+            sun.position.set(40, 80, 40);
+            sun.castShadow = true;
+            sun.shadow.mapSize.width = 2048;
+            sun.shadow.mapSize.height = 2048;
+            scene.add(sun);
+
+            createPlayerAvatar();
+            createTreadmillModel();
+            generateProceduralWorld(currentWorld);
+
+            setupTouchControls();
+            setupKeyboardControls();
+            checkOrientation();
+
+            window.addEventListener('resize', () => {
+                onWindowResize();
+                checkOrientation();
+            });
+        }
+
+        function createPlayerAvatar() {
+            player = new THREE.Group();
+
+            // Torso
+            const torsoGeo = new THREE.BoxGeometry(1.2, 1.4, 0.7);
+            const torsoMat = new THREE.MeshStandardMaterial({ color: 0x00A8FF, roughness: 0.3 });
+            const torso = new THREE.Mesh(torsoGeo, torsoMat);
+            torso.position.y = 0.7;
+            torso.castShadow = true;
+            player.add(torso);
+
+            // Head
+            const headGeo = new THREE.BoxGeometry(0.85, 0.85, 0.85);
+            const headMat = new THREE.MeshStandardMaterial({ color: 0xFFCC00, roughness: 0.2 });
+            head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 1.82;
+            head.castShadow = true;
+            player.add(head);
+
+            // Face texture
+            const faceCanvas = document.createElement('canvas');
+            faceCanvas.width = 128; faceCanvas.height = 128;
+            const ctx = faceCanvas.getContext('2d');
+            ctx.fillStyle = '#FFCC00'; ctx.fillRect(0, 0, 128, 128);
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(30, 38, 16, 26); ctx.fillRect(82, 38, 16, 26);
+            ctx.beginPath(); ctx.arc(64, 75, 28, 0, Math.PI, false); ctx.lineWidth = 8; ctx.stroke();
+            
+            const faceTexture = new THREE.CanvasTexture(faceCanvas);
+            const faceMat = new THREE.MeshBasicMaterial({ map: faceTexture });
+            const facePlane = new THREE.Mesh(new THREE.PlaneGeometry(0.75, 0.75), faceMat);
+            facePlane.position.set(0, 1.82, 0.43);
+            player.add(facePlane);
+
+            // Legs
+            const legGeo = new THREE.BoxGeometry(0.55, 1.2, 0.65);
+            const legMat = new THREE.MeshStandardMaterial({ color: 0x00E676, roughness: 0.4 });
+            leftLeg = new THREE.Mesh(legGeo, legMat);
+            leftLeg.position.set(-0.3, -0.2, 0);
+            leftLeg.castShadow = true;
+            player.add(leftLeg);
+
+            rightLeg = new THREE.Mesh(legGeo, legMat);
+            rightLeg.position.set(0.3, -0.2, 0);
+            rightLeg.castShadow = true;
+            player.add(rightLeg);
+
+            player.position.set(0, 3, 0);
+            scene.add(player);
+        }
+
+        function createTreadmillModel() {
+            treadmillMesh = new THREE.Group();
+
+            const baseGeo = new THREE.BoxGeometry(3.5, 0.4, 6);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.6 });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            treadmillMesh.add(base);
+
+            const beltGeo = new THREE.BoxGeometry(2.8, 0.1, 5.2);
+            const beltMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9 });
+            treadmillBelt = new THREE.Mesh(beltGeo, beltMat);
+            treadmillBelt.position.y = 0.22;
+            treadmillMesh.add(treadmillBelt);
+
+            const barGeo = new THREE.CylinderGeometry(0.08, 0.08, 2.8);
+            const barMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8 });
+            
+            const barL = new THREE.Mesh(barGeo, barMat);
+            barL.position.set(-1.4, 1.4, -2.2);
+            treadmillMesh.add(barL);
+
+            const barR = new THREE.Mesh(barGeo, barMat);
+            barR.position.set(1.4, 1.4, -2.2);
+            treadmillMesh.add(barR);
+
+            const screenGeo = new THREE.BoxGeometry(2.5, 1, 0.2);
+            const screenMat = new THREE.MeshBasicMaterial({ color: 0x00E676 });
+            const display = new THREE.Mesh(screenGeo, screenMat);
+            display.position.set(0, 2.6, -2.2);
+            treadmillMesh.add(display);
+
+            treadmillMesh.visible = false;
+            scene.add(treadmillMesh);
+        }
+
+        function generateProceduralWorld(worldNum) {
+            platforms.forEach(p => scene.remove(p));
+            hazards.forEach(h => scene.remove(h));
+            if (finishPortal) scene.remove(finishPortal);
+            platforms = [];
+            hazards = [];
+
+            const worldPalettes = [
+                [0x3B82F6, 0x10B981, 0x8B5CF6], // World 1
+                [0xEC4899, 0xF59E0B, 0x10B981], // World 2
+                [0x6366F1, 0x14B8A6, 0xF43F5E], // World 3
+                [0x84CC16, 0x06B6D4, 0xA855F7]  // World 4+
+            ];
+            const colors = worldPalettes[(worldNum - 1) % worldPalettes.length];
+
+            function addPlatform(x, y, z, w, h, d, color) {
+                const geo = new THREE.BoxGeometry(w, h, d);
+                const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.3 });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(x, y, z);
+                mesh.receiveShadow = true; mesh.castShadow = true;
+                scene.add(mesh);
+                platforms.push(mesh);
+                return mesh;
+            }
+
+            function addHazard(x, y, z, w, h, d) {
+                const geo = new THREE.BoxGeometry(w, h, d);
+                const mat = new THREE.MeshBasicMaterial({ color: 0xFF1744 });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(x, y, z);
+                scene.add(mesh);
+                hazards.push(mesh);
+                return mesh;
+            }
+
+            // Start Platform
+            addPlatform(0, 0, 0, 14, 2, 14, colors[0]);
+
+            let currentZ = -12;
+            const totalStages = 8 + worldNum * 2;
+
+            for (let i = 0; i < totalStages; i++) {
+                const platformWidth = Math.max(5, 10 - Math.floor(worldNum * 0.5));
+                const gap = 12 + Math.min(i * 1.5 + worldNum * 2, 28);
+                const platformX = (i % 3 === 0) ? -4 : (i % 3 === 1) ? 4 : 0;
+                const platformY = Math.sin(i * 0.8) * 2;
+
+                addPlatform(platformX, platformY, currentZ - gap, platformWidth, 2, 8, colors[i % colors.length]);
+                addHazard(0, platformY - 4, currentZ - gap / 2, 35, 1, gap - 2);
+
+                currentZ -= gap + 4;
+            }
+
+            // Finish Line Platform & Gate
+            addPlatform(0, 0, currentZ - 12, 18, 2, 18, 0x10B981);
+
+            const portalGeo = new THREE.TorusGeometry(4, 0.6, 16, 32);
+            const portalMat = new THREE.MeshBasicMaterial({ color: 0xFFD700 });
+            finishPortal = new THREE.Mesh(portalGeo, portalMat);
+            finishPortal.position.set(0, 5, currentZ - 12);
+            scene.add(finishPortal);
+        }
+
+        function setupTouchControls() {
+            const joystickZone = document.getElementById('joystick-zone');
+            const joystickKnob = document.getElementById('joystick-knob');
+            const touchJumpBtn = document.getElementById('touch-jump-btn');
+
+            let joystickTouchId = null;
+            let joystickCenter = { x: 0, y: 0 };
+
+            // Touch Joystick Handlers
+            joystickZone.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.changedTouches[0];
+                joystickTouchId = touch.identifier;
+                const rect = joystickZone.getBoundingClientRect();
+                joystickCenter = {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2
+                };
+                updateJoystick(touch.clientX, touch.clientY);
+            }, { passive: false });
+
+            window.addEventListener('touchmove', (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    if (touch.identifier === joystickTouchId) {
+                        updateJoystick(touch.clientX, touch.clientY);
+                    } else if (touch.identifier === cameraTouchId) {
+                        handleCameraTouchMove(touch.clientX, touch.clientY);
+                    }
+                }
+            }, { passive: false });
+
+            window.addEventListener('touchend', (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    if (touch.identifier === joystickTouchId) {
+                        joystickTouchId = null;
+                        joystickVector = { x: 0, y: 0 };
+                        joystickKnob.style.transform = `translate(0px, 0px)`;
+                    } else if (touch.identifier === cameraTouchId) {
+                        cameraTouchId = null;
+                    }
+                }
+            });
+
+            function updateJoystick(clientX, clientY) {
+                const deltaX = clientX - joystickCenter.x;
+                const deltaY = clientY - joystickCenter.y;
+                const dist = Math.hypot(deltaX, deltaY);
+                const maxDist = 45;
+
+                const angle = Math.atan2(deltaY, deltaX);
+                const clampedDist = Math.min(dist, maxDist);
+
+                const knobX = Math.cos(angle) * clampedDist;
+                const knobY = Math.sin(angle) * clampedDist;
+
+                joystickKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+                joystickVector = {
+                    x: knobX / maxDist,
+                    y: knobY / maxDist
+                };
+            }
+
+            // Touch Camera Look Handler (Right half of screen touch drag)
+            window.addEventListener('touchstart', (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    if (touch.clientX > window.innerWidth / 2 && cameraTouchId === null && touch.target.id !== 'touch-jump-btn') {
+                        cameraTouchId = touch.identifier;
+                        prevTouchX = touch.clientX;
+                        prevTouchY = touch.clientY;
+                    }
+                }
+            });
+
+            function handleCameraTouchMove(clientX, clientY) {
+                const deltaX = clientX - prevTouchX;
+                const deltaY = clientY - prevTouchY;
+
+                cameraYaw -= deltaX * 0.007;
+                cameraPitch += deltaY * 0.007; // Corrected Y pitch direction
+                cameraPitch = Math.max(-0.2, Math.min(Math.PI / 2.2, cameraPitch));
+
+                prevTouchX = clientX;
+                prevTouchY = clientY;
+            }
+
+            // Large Touch Jump Button Listener
+            const triggerJumpAction = (e) => {
+                e.preventDefault();
+                triggerJump();
+            };
+            touchJumpBtn.addEventListener('touchstart', triggerJumpAction, { passive: false });
+            touchJumpBtn.addEventListener('pointerdown', triggerJumpAction);
+
+            // Buttons Action Listeners
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('next-world-btn').addEventListener('click', loadNextWorld);
+            document.getElementById('treadmill-btn').addEventListener('click', toggleTreadmillMode);
+            document.getElementById('shift-lock-btn').addEventListener('click', toggleShiftLock);
+        }
+
+        function setupKeyboardControls() {
+            window.addEventListener('keydown', (e) => {
+                const k = e.key.toLowerCase();
+                if (k === 'w' || k === 'arrowup') keys.w = true;
+                if (k === 's' || k === 'arrowdown') keys.s = true;
+                if (k === 'a' || k === 'arrowleft') keys.a = true;
+                if (k === 'd' || k === 'arrowright') keys.d = true;
+                if (k === ' ' || k === 'space') triggerJump();
+                if (e.key === 'Shift') toggleShiftLock();
+            });
+
+            window.addEventListener('keyup', (e) => {
+                const k = e.key.toLowerCase();
+                if (k === 'w' || k === 'arrowup') keys.w = false;
+                if (k === 's' || k === 'arrowdown') keys.s = false;
+                if (k === 'a' || k === 'arrowleft') keys.a = false;
+                if (k === 'd' || k === 'arrowright') keys.d = false;
+            });
+
+            // Desktop Mouse Look Controls
+            window.addEventListener('mousedown', (e) => {
+                if (e.target.tagName !== 'BUTTON') {
+                    isMouseDown = true;
+                    prevTouchX = e.clientX;
+                    prevTouchY = e.clientY;
+                }
+            });
+
+            window.addEventListener('mouseup', () => isMouseDown = false);
+
+            window.addEventListener('mousemove', (e) => {
+                if (document.pointerLockElement === document.body || isMouseDown) {
+                    const deltaX = (document.pointerLockElement === document.body) ? e.movementX : e.clientX - prevTouchX;
+                    const deltaY = (document.pointerLockElement === document.body) ? e.movementY : e.clientY - prevTouchY;
+
+                    cameraYaw -= deltaX * 0.005;
+                    cameraPitch += deltaY * 0.005; // Corrected Mouse Pitch
+                    cameraPitch = Math.max(-0.2, Math.min(Math.PI / 2.2, cameraPitch));
+
+                    prevTouchX = e.clientX;
+                    prevTouchY = e.clientY;
+                }
+            });
+        }
+
+        function checkOrientation() {
+            const notice = document.getElementById('landscape-notice');
+            if (window.innerHeight > window.innerWidth && window.innerWidth < 768) {
+                notice.classList.remove('hidden');
+            } else {
+                notice.classList.add('hidden');
+            }
+        }
+
+        function toggleShiftLock() {
+            isShiftLocked = !isShiftLocked;
+            const statusEl = document.getElementById('shift-status');
+            const crosshairEl = document.getElementById('crosshair');
+
+            if (isShiftLocked) {
+                statusEl.innerText = "ON";
+                statusEl.className = "text-[8px] text-green-400 font-bold";
+                crosshairEl.style.display = 'block';
+                if (window.innerWidth > 768) document.body.requestPointerLock();
+            } else {
+                statusEl.innerText = "OFF";
+                statusEl.className = "text-[8px] text-red-400";
+                crosshairEl.style.display = 'none';
+                if (document.exitPointerLock) document.exitPointerLock();
+            }
+        }
+
+        function triggerJump() {
+            if (isGrounded && !isOnTreadmill) {
+                velocityY = baseJumpForce + Math.min(speed * 0.12, 10);
+                isGrounded = false;
+                audio.playJump();
+            }
+        }
+
+        function toggleTreadmillMode() {
+            isOnTreadmill = !isOnTreadmill;
+            const statusEl = document.getElementById('treadmill-status');
+
+            if (isOnTreadmill) {
+                statusEl.innerText = "YUTIB OLISH";
+                statusEl.className = "text-[8px] bg-yellow-400 text-black px-1.5 py-0.5 rounded-full font-bold";
+                
+                treadmillMesh.position.copy(player.position);
+                treadmillMesh.position.y -= 0.6;
+                treadmillMesh.visible = true;
+                player.rotation.y = cameraYaw;
+            } else {
+                statusEl.innerText = "YUGURISH";
+                statusEl.className = "text-[8px] bg-black/50 px-1.5 py-0.5 rounded-full text-green-300";
+                treadmillMesh.visible = false;
+            }
+        }
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = Math.min(clock.getDelta(), 0.1);
+
+            if (renderer && scene && camera) {
+                updatePhysics(delta);
+                updateCameraPosition();
+                
+                if (finishPortal) finishPortal.rotation.z += delta * 2;
+
+                renderer.render(scene, camera);
+            }
+        }
+
+        function updatePhysics(delta) {
+            // TREADMILL TRAINING MODE PHYSICS
+            if (isOnTreadmill) {
+                treadmillBelt.position.z = (treadmillBelt.position.z + delta * 3) % 0.4;
+                
+                // Treadmill speed & coin gain
+                speed += delta * 5;
+                coins += delta * 4;
+
+                leftLeg.rotation.x = Math.sin(clock.getElapsedTime() * 15) * 0.6;
+                rightLeg.rotation.x = -Math.sin(clock.getElapsedTime() * 15) * 0.6;
+
+                updateHUD();
+                return;
+            }
+
+            // REGULAR RUNNING PHYSICS (Combine Keyboard WASD + Touch Joystick)
+            let moveX = joystickVector.x;
+            let moveZ = joystickVector.y;
+
+            if (keys.w) moveZ -= 1;
+            if (keys.s) moveZ += 1;
+            if (keys.a) moveX -= 1;
+            if (keys.d) moveX += 1;
+
+            const isMoving = (Math.abs(moveX) > 0.1 || Math.abs(moveZ) > 0.1);
+
+            if (isMoving) {
+                const moveDir = new THREE.Vector3(moveX, 0, moveZ).normalize();
+                const actualSpeed = 8 + speed * 0.8;
+
+                const rotX = moveDir.x * Math.cos(cameraYaw) + moveDir.z * Math.sin(cameraYaw);
+                const rotZ = -moveDir.x * Math.sin(cameraYaw) + moveDir.z * Math.cos(cameraYaw);
+
+                player.position.x += rotX * actualSpeed * delta;
+                player.position.z += rotZ * actualSpeed * delta;
+
+                // SPEED INCREASES WHEN WALKING / RUNNING!
+                speed += delta * 0.5;
+
+                if (isShiftLocked) {
+                    player.rotation.y = cameraYaw;
+                } else {
+                    player.rotation.y = Math.atan2(rotX, rotZ);
+                }
+
+                leftLeg.rotation.x = Math.sin(clock.getElapsedTime() * (10 + speed * 0.2)) * 0.7;
+                rightLeg.rotation.x = -Math.sin(clock.getElapsedTime() * (10 + speed * 0.2)) * 0.7;
+
+                footstepTimer += delta;
+                if (footstepTimer > 0.25 - Math.min(speed * 0.005, 0.15) && isGrounded) {
+                    audio.playFootstep();
+                    footstepTimer = 0;
+                }
+            } else {
+                leftLeg.rotation.x = 0;
+                rightLeg.rotation.x = 0;
+            }
+
+            // Gravity Physics
+            velocityY += gravity * delta;
+            player.position.y += velocityY * delta;
+
+            let playerBottom = player.position.y - 0.8;
+            isGrounded = false;
+
+            // Platform Collisions
+            for (let plat of platforms) {
+                const box = new THREE.Box3().setFromObject(plat);
+                if (
+                    player.position.x >= box.min.x - 0.5 &&
+                    player.position.x <= box.max.x + 0.5 &&
+                    player.position.z >= box.min.z - 0.5 &&
+                    player.position.z <= box.max.z + 0.5
+                ) {
+                    if (playerBottom <= box.max.y && playerBottom >= box.max.y - 0.8 && velocityY <= 0) {
+                        player.position.y = box.max.y + 0.8;
+                        velocityY = 0;
+                        isGrounded = true;
+                        break;
+                    }
+                }
+            }
+
+            // Hazard Collision Check
+            const playerBox = new THREE.Box3().setFromObject(player);
+            for (let hazard of hazards) {
+                const hazardBox = new THREE.Box3().setFromObject(hazard);
+                if (playerBox.intersectsBox(hazardBox)) {
+                    audio.playDeath();
+                    respawnPlayer();
+                    break;
+                }
+            }
+
+            // Finish Line Check
+            if (finishPortal) {
+                const portalBox = new THREE.Box3().setFromObject(finishPortal);
+                if (playerBox.intersectsBox(portalBox)) {
+                    triggerWorldVictory();
+                }
+            }
+
+            // Void Death Check
+            if (player.position.y < -18) {
+                audio.playDeath();
+                respawnPlayer();
+            }
+
+            updateHUD();
+        }
+
+        function updateCameraPosition() {
+            const distance = 12;
+            const camX = player.position.x + distance * Math.sin(cameraYaw) * Math.cos(cameraPitch);
+            const camY = player.position.y + 1.8 + distance * Math.sin(cameraPitch);
+            const camZ = player.position.z + distance * Math.cos(cameraYaw) * Math.cos(cameraPitch);
+
+            camera.position.set(camX, camY, camZ);
+            camera.lookAt(player.position.x, player.position.y + 1.5, player.position.z);
+        }
+
+        function respawnPlayer() {
+            player.position.set(0, 3, 0);
+            velocityY = 0;
+            if (isOnTreadmill) toggleTreadmillMode();
+        }
+
+        function triggerWorldVictory() {
+            audio.playVictory();
+            const rewardCoins = 100 * currentWorld;
+            coins += rewardCoins;
+
+            document.getElementById('win-coins').innerText = "+" + rewardCoins + " 🪙";
+            document.getElementById('next-world-title').innerText = "WORLD " + (currentWorld + 1);
+            document.getElementById('victory-modal').classList.remove('hidden');
+        }
+
+        function loadNextWorld() {
+            currentWorld += 1;
+            document.getElementById('victory-modal').classList.add('hidden');
+            document.getElementById('hud-world').innerText = "WORLD " + currentWorld;
+
+            generateProceduralWorld(currentWorld);
+            respawnPlayer();
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-speed').innerText = Math.floor(speed);
+            document.getElementById('hud-coins').innerText = Math.floor(coins);
+        }
+
+        function startGame() {
+            audio.init();
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-hud').classList.remove('hidden');
+            respawnPlayer();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.onload = function() {
+            initScene();
+            animate();
+        };
+    </script>
+</body>
+</html>
